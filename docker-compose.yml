@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8
+    container_name: feedback-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${DB_NAME:-feedbackdb}
+      MYSQL_USER: ${DB_USER:-feedback_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-feedback_pass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - feedback-network
+
+  backend:
+    build: ./backend
+    container_name: feedback-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${DB_NAME:-feedbackdb}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-feedback_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-feedback_pass}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+      APP_JWT_SECRET: ${JWT_SECRET:-VGhpc0lzQVZlcnlMb25nU2VjcmV0S2V5Rm9ySldUU2lnbmluZ1RoYXRJc0F0TGVhc3Q1MTJCaXRzTG9uZw==}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - feedback-network
+
+  frontend:
+    build: ./frontend
+    container_name: feedback-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - feedback-network
+
+networks:
+  feedback-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

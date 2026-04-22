@@ -1,0 +1,44 @@
+#!/bin/sh
+
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+MAVEN_HOME="$SCRIPT_DIR/.mvn/maven/apache-maven-3.9.6"
+MVN_BIN="$MAVEN_HOME/bin/mvn"
+
+if [ ! -x "$MVN_BIN" ]; then
+  echo "Maven binary not found at $MVN_BIN" >&2
+  exit 1
+fi
+
+for candidate in \
+  /usr/lib/jvm/jdk-21* \
+  /usr/lib/jvm/java-21* \
+  /usr/lib/jvm/jdk-22* \
+  /usr/lib/jvm/java-22* \
+  /usr/lib/jvm/jdk-23* \
+  /usr/lib/jvm/java-23* \
+  /usr/lib/jvm/jdk-24* \
+  /usr/lib/jvm/java-24* \
+  /usr/lib/jvm/jdk-25* \
+  /usr/lib/jvm/java-25* \
+  /Library/Java/JavaVirtualMachines/jdk-21*.jdk/Contents/Home \
+  /Library/Java/JavaVirtualMachines/jdk-22*.jdk/Contents/Home \
+  /Library/Java/JavaVirtualMachines/jdk-23*.jdk/Contents/Home \
+  /Library/Java/JavaVirtualMachines/jdk-24*.jdk/Contents/Home \
+  /Library/Java/JavaVirtualMachines/jdk-25*.jdk/Contents/Home
+do
+  if [ -x "$candidate/bin/java" ]; then
+    JAVA_HOME=$candidate
+    export JAVA_HOME
+    break
+  fi
+done
+
+if [ -z "${JAVA_HOME:-}" ] && command -v java >/dev/null 2>&1; then
+  JAVA_BIN=$(command -v java)
+  JAVA_HOME=$(CDPATH= cd -- "$(dirname -- "$JAVA_BIN")/.." && pwd)
+  export JAVA_HOME
+fi
+
+exec "$MVN_BIN" "$@"

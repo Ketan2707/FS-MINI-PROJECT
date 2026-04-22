@@ -1,0 +1,31 @@
+# ==== General ====
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+.env
+
+# ==== IDEs ====
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# ==== Backend (Spring Boot / Maven) ====
+backend/target/
+backend/.mvn/repository/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/*.jar
+backend/*.war
+
+# ==== Frontend (React / Vite / Node) ====
+frontend/node_modules/
+frontend/dist/
+frontend/.cache/
+
+# ==== Docker ====
+docker-compose.override.yml
